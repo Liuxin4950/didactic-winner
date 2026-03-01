@@ -159,9 +159,23 @@ export default function EyeModel() {
   const { params } = useVision();
   const eyeRef = useRef<THREE.Group>(null);
 
-  const myopiaScale = useMemo(() => {
-    const scale = 1 + Math.abs(params.sphere) * 0.03;
-    return Math.min(scale, 1.4);
+  const axialScaleZ = useMemo(() => {
+    const sphericalDiopter = params.sphere;
+
+    if (sphericalDiopter < 0) {
+      // 简化医学映射：近视（负球镜）通常与眼轴偏长相关，这里仅沿 z 轴做有限拉伸。
+      const myopiaAxialScale = 1 + Math.abs(sphericalDiopter) * 0.03;
+      return Math.min(myopiaAxialScale, 1.4);
+    }
+
+    if (sphericalDiopter > 0) {
+      // 简化医学映射：远视（正球镜）常见为眼轴偏短，这里采用轻微缩短避免视觉夸张。
+      const hyperopiaAxialScale = 1 - sphericalDiopter * 0.01;
+      return Math.max(hyperopiaAxialScale, 0.92);
+    }
+
+    // 正视眼（0D）使用基准眼轴长度。
+    return 1;
   }, [params.sphere]);
 
   useFrame((state) => {
@@ -179,7 +193,7 @@ export default function EyeModel() {
       <Pupil />
 
       {/* 外部结构 - 半透明 */}
-      <Sclera scaleZ={myopiaScale} />
+      <Sclera scaleZ={axialScaleZ} />
       <Cornea />
 
       {/* 高光 */}
