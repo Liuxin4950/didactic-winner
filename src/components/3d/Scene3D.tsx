@@ -1,5 +1,5 @@
 import { Suspense, useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { useVision, CameraAngle } from '../../contexts/VisionContext';
@@ -14,7 +14,9 @@ function MyopiaFog() {
   const fogParams = useMemo(() => {
     const sphere = Math.abs(params.sphere);
     const cylinder = Math.abs(params.cylinder);
-    const total = sphere + cylinder * 0.5;
+    const axisOffset = Math.abs(params.axis - 90) / 90;
+    const axisWeight = 1 - axisOffset * 0.2;
+    const total = sphere + cylinder * 0.5 * axisWeight;
 
     if (total < 0.25) {
       return { near: 100, far: 100, opacity: 0 };
@@ -25,14 +27,18 @@ function MyopiaFog() {
     const far = 20 - total * 0.5;
 
     return { near, far, opacity };
-  }, [params.sphere, params.cylinder]);
+  }, [params.sphere, params.cylinder, params.axis]);
 
-  useMemo(() => {
+  useEffect(() => {
     if (fogParams.opacity > 0) {
       scene.fog = new THREE.Fog('#1a1a2e', fogParams.near, fogParams.far);
     } else {
       scene.fog = null;
     }
+
+    return () => {
+      scene.fog = null;
+    };
   }, [scene, fogParams]);
 
   return null;
@@ -96,6 +102,7 @@ function SceneContent() {
         </>
       ) : (
         <>
+          {/* 雾效单一数据源：仅由 MyopiaFog 基于 SPH/CYL/AXIS 计算并写入 scene.fog */}
           <MyopiaFog />
           <SimulationScene />
         </>
