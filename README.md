@@ -100,3 +100,5 @@ src/
 
 - [AGENTS.md](./AGENTS.md) - 代码代理执行规则（强制）
 - [CLAUDE.md](./CLAUDE.md) - Claude Code 使用指南
+- [AI_PROJECT_CONTEXT.md](./AI_PROJECT_CONTEXT.md) - AI 协作项目上下文（目标、架构、运行与调试）
+- [CHANGELOG.md](./CHANGELOG.md) - 变更日志（Keep a Changelog）
