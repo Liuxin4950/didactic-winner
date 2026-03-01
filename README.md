@@ -98,4 +98,5 @@ src/
 
 ## 相关文档
 
+- [AGENTS.md](./AGENTS.md) - 代码代理执行规则（强制）
 - [CLAUDE.md](./CLAUDE.md) - Claude Code 使用指南
