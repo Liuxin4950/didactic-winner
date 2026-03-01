@@ -1,10 +1,26 @@
 import { Suspense, useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { useVision, CameraAngle } from '../../contexts/VisionContext';
 import EyeModel from './EyeModel';
 import SimulationScene from './SimulationScene';
+
+const CAMERA_PRESETS: Record<
+  CameraAngle,
+  {
+    position: [number, number, number];
+    fov: number;
+    near: number;
+    far: number;
+  }
+> = {
+  front: { position: [0, 0, 3], fov: 50, near: 0.1, far: 100 },
+  top: { position: [0, 3, 0.1], fov: 50, near: 0.1, far: 100 },
+  bottom: { position: [0, -3, 0.1], fov: 50, near: 0.1, far: 100 },
+  left: { position: [-3, 0, 0.1], fov: 50, near: 0.1, far: 100 },
+  right: { position: [3, 0, 0.1], fov: 50, near: 0.1, far: 100 },
+};
 
 // 模拟近视模糊效果 - 使用简单的雾效
 function MyopiaFog() {
@@ -46,17 +62,30 @@ function CameraController() {
 
   // 根据角度设置相机位置
   useEffect(() => {
-    const positions: Record<CameraAngle, [number, number, number]> = {
-      front: [0, 0, 3],
-      top: [0, 3, 0.1],
-      bottom: [0, -3, 0.1],
-      left: [-3, 0, 0.1],
-      right: [3, 0, 0.1],
-    };
-    const pos = positions[cameraAngle];
-    camera.position.set(pos[0], pos[1], pos[2]);
+    const preset = CAMERA_PRESETS[cameraAngle];
+    camera.position.set(...preset.position);
+    camera.fov = preset.fov;
+    camera.near = preset.near;
+    camera.far = preset.far;
+    camera.updateProjectionMatrix();
     camera.lookAt(0, 0, 0);
-  }, [cameraAngle, camera]);
+
+    if (controlsRef.current) {
+      const controls = controlsRef.current;
+      const shouldRestoreAutoRotate = controls.autoRotate;
+      controls.autoRotate = false;
+      controls.target.set(0, 0, 0);
+      controls.update();
+
+      if (shouldRestoreAutoRotate && autoRotate) {
+        requestAnimationFrame(() => {
+          if (controlsRef.current) {
+            controlsRef.current.autoRotate = true;
+          }
+        });
+      }
+    }
+  }, [cameraAngle, camera, autoRotate]);
 
   useEffect(() => {
     if (controlsRef.current) {
@@ -118,7 +147,12 @@ export default function Scene3D() {
   return (
     <div className="w-full h-full bg-slate-900">
       <Canvas
-        camera={{ position: [0, 0, 3], fov: 50 }}
+        camera={{
+          position: CAMERA_PRESETS.front.position,
+          fov: CAMERA_PRESETS.front.fov,
+          near: CAMERA_PRESETS.front.near,
+          far: CAMERA_PRESETS.front.far,
+        }}
         gl={{
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
