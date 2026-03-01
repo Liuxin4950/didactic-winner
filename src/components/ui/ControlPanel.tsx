@@ -1,7 +1,7 @@
-import { useVision } from '../../contexts/VisionContext';
+import { useVision, CameraAngle } from '../../contexts/VisionContext';
 
 export default function ControlPanel() {
-  const { params, setParams, viewMode, setViewMode } = useVision();
+  const { params, setParams, viewMode, setViewMode, autoRotate, setAutoRotate, cameraAngle, setCameraAngle } = useVision();
 
   const handleSphereChange = (value: number) => {
     setParams({ ...params, sphere: value });
@@ -14,6 +14,14 @@ export default function ControlPanel() {
   const handleAxisChange = (value: number) => {
     setParams({ ...params, axis: value });
   };
+
+  const angles: { key: CameraAngle; label: string }[] = [
+    { key: 'front', label: '前' },
+    { key: 'top', label: '上' },
+    { key: 'bottom', label: '下' },
+    { key: 'left', label: '左' },
+    { key: 'right', label: '右' },
+  ];
 
   return (
     <div className="bg-slate-900 text-white p-6 rounded-lg shadow-xl">
@@ -45,6 +53,85 @@ export default function ControlPanel() {
           </button>
         </div>
       </div>
+
+      {/* 解剖视图控制按钮 */}
+      {viewMode === 'anatomy' && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2 text-slate-300">视角控制</label>
+
+          {/* 旋转控制 */}
+          <div className="mb-3">
+            <button
+              onClick={() => setAutoRotate(!autoRotate)}
+              className={`w-full py-2 px-4 rounded-lg transition-all ${
+                autoRotate
+                  ? 'bg-green-600 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              {autoRotate ? '⏸ 暂停旋转' : '▶ 开始旋转'}
+            </button>
+          </div>
+
+          {/* 方向按钮 */}
+          <div className="grid grid-cols-5 gap-1">
+            <div></div>
+            <button
+              onClick={() => setCameraAngle('top')}
+              className={`py-2 rounded-lg transition-all ${
+                cameraAngle === 'top'
+                  ? 'bg-sky-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              ↑
+            </button>
+            <div></div>
+            <button
+              onClick={() => setCameraAngle('left')}
+              className={`py-2 rounded-lg transition-all ${
+                cameraAngle === 'left'
+                  ? 'bg-sky-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              ←
+            </button>
+            <button
+              onClick={() => setCameraAngle('front')}
+              className={`py-2 rounded-lg transition-all ${
+                cameraAngle === 'front'
+                  ? 'bg-sky-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              ●
+            </button>
+            <button
+              onClick={() => setCameraAngle('right')}
+              className={`py-2 rounded-lg transition-all ${
+                cameraAngle === 'right'
+                  ? 'bg-sky-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              →
+            </button>
+            <div></div>
+            <button
+              onClick={() => setCameraAngle('bottom')}
+              className={`py-2 rounded-lg transition-all ${
+                cameraAngle === 'bottom'
+                  ? 'bg-sky-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              ↓
+            </button>
+            <div></div>
+          </div>
+        </div>
+      )}
 
       {/* 球镜度数 */}
       <div className="mb-6">

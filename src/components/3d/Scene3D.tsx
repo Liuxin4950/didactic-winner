@@ -1,8 +1,8 @@
-import { Suspense, useRef, useMemo } from 'react';
+import { Suspense, useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import * as THREE from 'three';
-import { useVision } from '../../contexts/VisionContext';
+import { useVision, CameraAngle } from '../../contexts/VisionContext';
 import EyeModel from './EyeModel';
 import SimulationScene from './SimulationScene';
 
@@ -16,12 +16,10 @@ function MyopiaFog() {
     const cylinder = Math.abs(params.cylinder);
     const total = sphere + cylinder * 0.5;
 
-    // 只有度数大于0.25才添加模糊效果
     if (total < 0.25) {
       return { near: 100, far: 100, opacity: 0 };
     }
 
-    // 近视越深，雾越浓
     const opacity = Math.min(total * 0.08, 0.85);
     const near = 1;
     const far = 20 - total * 0.5;
@@ -40,9 +38,48 @@ function MyopiaFog() {
   return null;
 }
 
+// 相机位置控制组件
+function CameraController() {
+  const { cameraAngle, autoRotate } = useVision();
+  const controlsRef = useRef<any>(null);
+  const { camera } = useThree();
+
+  // 根据角度设置相机位置
+  useEffect(() => {
+    const positions: Record<CameraAngle, [number, number, number]> = {
+      front: [0, 0, 3],
+      top: [0, 3, 0.1],
+      bottom: [0, -3, 0.1],
+      left: [-3, 0, 0.1],
+      right: [3, 0, 0.1],
+    };
+    const pos = positions[cameraAngle];
+    camera.position.set(pos[0], pos[1], pos[2]);
+    camera.lookAt(0, 0, 0);
+  }, [cameraAngle, camera]);
+
+  useEffect(() => {
+    if (controlsRef.current) {
+      controlsRef.current.autoRotate = autoRotate;
+    }
+  }, [autoRotate]);
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enablePan={true}
+      enableZoom={true}
+      minDistance={1.5}
+      maxDistance={8}
+      autoRotate={autoRotate}
+      autoRotateSpeed={0.8}
+    />
+  );
+}
+
 // 3D场景内容
 function SceneContent() {
-  const { viewMode, params } = useVision();
+  const { viewMode } = useVision();
 
   return (
     <>
@@ -53,14 +90,7 @@ function SceneContent() {
 
       {viewMode === 'anatomy' ? (
         <>
-          <OrbitControls
-            enablePan={true}
-            enableZoom={true}
-            minDistance={1.5}
-            maxDistance={8}
-            autoRotate={true}
-            autoRotateSpeed={0.8}
-          />
+          <CameraController />
           <EyeModel />
           <Environment preset="city" />
         </>

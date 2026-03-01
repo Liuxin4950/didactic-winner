@@ -6,11 +6,17 @@ export interface VisionParams {
   axis: number;         // 轴向 (0 ~ 180)
 }
 
+export type CameraAngle = 'front' | 'top' | 'bottom' | 'left' | 'right';
+
 export interface VisionContextType {
   params: VisionParams;
   setParams: (params: VisionParams) => void;
   viewMode: 'anatomy' | 'simulation';
   setViewMode: (mode: 'anatomy' | 'simulation') => void;
+  autoRotate: boolean;
+  setAutoRotate: (value: boolean) => void;
+  cameraAngle: CameraAngle;
+  setCameraAngle: (angle: CameraAngle) => void;
 }
 
 const defaultParams: VisionParams = {
@@ -24,9 +30,20 @@ const VisionContext = createContext<VisionContextType | undefined>(undefined);
 export function VisionProvider({ children }: { children: ReactNode }) {
   const [params, setParams] = useState<VisionParams>(defaultParams);
   const [viewMode, setViewMode] = useState<'anatomy' | 'simulation'>('anatomy');
+  const [autoRotate, setAutoRotate] = useState(true);
+  const [cameraAngle, setCameraAngle] = useState<CameraAngle>('front');
 
   return (
-    <VisionContext.Provider value={{ params, setParams, viewMode, setViewMode }}>
+    <VisionContext.Provider value={{
+      params,
+      setParams,
+      viewMode,
+      setViewMode,
+      autoRotate,
+      setAutoRotate,
+      cameraAngle,
+      setCameraAngle
+    }}>
       {children}
     </VisionContext.Provider>
   );

@@ -62,8 +62,8 @@ function Pupil({ radius = 0.12 }) {
 
 function Cornea() {
   return (
-    <group position={[0, 0, 0.2]}>
-      {/* 角膜 - 半球形覆盖在眼睛前方 */}
+    <group position={[0, 0, 0.14]}>
+      {/* 角膜 - 半球形覆盖在眼睛前方，z=0.14与虹膜位置对应 */}
       <mesh rotation={[0, 0, 0]}>
         <sphereGeometry args={[0.42, 64, 64, 0, Math.PI * 2, 0, Math.PI / 2]} />
         <meshPhysicalMaterial
